@@ -33,8 +33,24 @@ function isDirExists(path) {
   return false;
 }
 
+async function setCommitter() {
+  await cmdRunAsync(
+    "cd bucket && git config user.name 'unknown' && git config user.email 'noreply@github.com'"
+  );
+}
+
+async function commitAndPush(message) {
+  if (!message) {
+    message = "Added new files";
+  }
+  await cmdRunAsync(`cd bucket && git add -A && git commit -m '${message}'`);
+  await cmdRunAsync("cd bucket && git push origin main");
+}
+
 module.exports = {
   cmdRun,
   cmdRunAsync,
   isDirExists,
+  setCommitter,
+  commitAndPush,
 };

@@ -5,6 +5,11 @@ const constants = require("../../constants");
 
 const multer = require("multer");
 const upload = require("../../helpers/multer");
+const {
+  isDirExists,
+  setCommitter,
+  commitAndPush,
+} = require("../../helpers/utils");
 
 // get files from the server
 router.get("/", (req, res) => {
@@ -17,7 +22,7 @@ router.get("/", (req, res) => {
 router.post("/upload", async (req, res) => {
   // Handle the uploaded file
   const fileUpload = upload.single("file");
-  fileUpload(req, res, function (err) {
+  fileUpload(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
       // A Multer error occurred when uploading.
       console.log("error occured in multer while uploading");
@@ -25,6 +30,12 @@ router.post("/upload", async (req, res) => {
       console.log("error: something went wrong");
     }
     // Everything went fine.
+    if (isDirExists("bucket")) {
+      // set commiter info
+      await setCommitter();
+      // commit changes
+      await commitAndPush();
+    }
     console.log("File uploaded successfully!");
   });
   res
