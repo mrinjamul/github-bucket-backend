@@ -119,3 +119,5 @@ dist
 
 # Extras
 bucket/
+bucket/*
+bucket/**/*

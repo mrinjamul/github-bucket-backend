@@ -14,6 +14,18 @@ var app = express();
 // get configs
 const config = require("./config").getConfig();
 
+// get bucket directory
+const { isDirExists, cmdRun } = require("./helpers/utils");
+
+if (!isDirExists("bucket")) {
+  console.log("error: directory not exist.");
+  console.log(" Creating the bucket...");
+  cmdRun(`git clone ${config.github.repo_url}`);
+  if (!isDirExists("bucket/assets")) {
+    cmdRun(`mkdir -p bucket/assets`);
+  }
+}
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
