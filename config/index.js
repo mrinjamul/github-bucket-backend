@@ -8,7 +8,7 @@ const config = {
   server: {
     appMode: process.env.APP_MODE || "dev",
     address: process.env.ADDRESS || "localhost",
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 4000,
   },
   database: {
     host: process.env.DB_HOST || "localhost",
@@ -23,6 +23,8 @@ const config = {
   },
   github: {
     repo_url: process.env.REPO_URL || "",
+    url: process.env.URL || "",
+    pat: process.env.GITHUB_SECRET || "",
   },
 };
 

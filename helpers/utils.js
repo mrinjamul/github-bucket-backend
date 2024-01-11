@@ -33,6 +33,10 @@ function isDirExists(path) {
   return false;
 }
 
+async function ls(path) {
+  return await fs.readdirSync(path);
+}
+
 async function setCommitter() {
   await cmdRunAsync(
     "cd bucket && git config user.name 'unknown' && git config user.email 'noreply@github.com'"
@@ -53,4 +57,5 @@ module.exports = {
   isDirExists,
   setCommitter,
   commitAndPush,
+  ls,
 };

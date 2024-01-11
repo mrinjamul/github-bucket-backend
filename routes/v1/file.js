@@ -3,19 +3,36 @@ var router = express.Router();
 
 const constants = require("../../constants");
 
+const config = require("../../config").getConfig();
+var port = config.server.port;
+var server_url = `http://localhost:${port}/api/v1/file/`;
+
+const querystring = require("querystring");
+
 const multer = require("multer");
 const upload = require("../../helpers/multer");
 const {
   isDirExists,
   setCommitter,
   commitAndPush,
+  ls,
 } = require("../../helpers/utils");
 
-// get files from the server
-router.get("/", (req, res) => {
-  res
-    .status(constants.http.StatusNotImplemented)
-    .json({ message: "in development" });
+// get file information from the server
+router.get("/info", async (req, res) => {
+  let data = [];
+  let result = await ls("bucket/assets");
+  result.forEach((file) => {
+    data.push({
+      filename: file,
+      origURL: server_url + querystring.escape(file),
+      url: config.github.url + querystring.escape(file),
+    });
+  });
+  res.status(constants.http.StatusOK).json({
+    status: true,
+    data: data,
+  });
 });
 
 // upload file to the server
@@ -26,21 +43,42 @@ router.post("/upload", async (req, res) => {
     if (err instanceof multer.MulterError) {
       // A Multer error occurred when uploading.
       console.log("error occured in multer while uploading");
+      return res
+        .status(constants.http.StatusInternalServerError)
+        .json({ error: "Multer error" });
     } else if (err) {
       console.log("error: something went wrong");
+      return res
+        .status(constants.http.StatusInternalServerError)
+        .json({ error: "Something went wrong" });
     }
     // Everything went fine.
     if (isDirExists("bucket")) {
-      // set commiter info
-      await setCommitter();
-      // commit changes
-      await commitAndPush();
+      try {
+        // set commiter info
+        await setCommitter();
+        // commit changes
+        await commitAndPush();
+      } catch (err) {
+        console.log(err);
+      }
     }
-    console.log("File uploaded successfully!");
+    // Access the uploaded filename
+    const uploadedFile = req.file.filename;
+    console.log(`${uploadedFile}: File uploaded successfully!`);
+    res.status(constants.http.StatusOK).json({
+      status: true,
+      data: {
+        filename: uploadedFile,
+        origURL: server_url + querystring.escape(uploadedFile),
+        url: config.github.url + querystring.escape(uploadedFile),
+      },
+    });
   });
-  res
-    .status(constants.http.StatusOK)
-    .json({ message: "File uploaded successfully!" });
 });
+
+// get files from the server
+var path = require("path");
+router.use("/", express.static(path.join(__dirname, "../../bucket/assets")));
 
 module.exports = router;
