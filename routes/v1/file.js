@@ -5,7 +5,7 @@ const constants = require("../../constants");
 
 const config = require("../../config").getConfig();
 var port = config.server.port;
-var server_url = `http://localhost:${port}/api/v1/file/`;
+var server_url = `${config.github.serv_url}/api/v1/file/`;
 
 const querystring = require("querystring");
 

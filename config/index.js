@@ -25,6 +25,7 @@ const config = {
     repo_url: process.env.REPO_URL || "",
     url: process.env.URL || "",
     pat: process.env.GITHUB_SECRET || "",
+    serv_url: process.env.SERV_URL || "",
   },
 };
 
