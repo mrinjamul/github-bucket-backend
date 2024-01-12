@@ -6,13 +6,17 @@ var logger = require("morgan");
 const cors = require("cors");
 
 var indexRouter = require("./routes/view");
-//
+var healthRouter = require("./routes/healthcheck");
 var apiRouter = require("./routes/api");
 
 var app = express();
 
 // get configs
 const config = require("./config").getConfig();
+
+// get Status object
+var status = require("./helpers/status").getStatus();
+status.startTime = new Date();
 
 // get bucket directory
 const { isDirExists, cmdRun } = require("./helpers/utils");
@@ -33,7 +37,12 @@ app.use(cookieParser());
 app.use("/static", express.static(path.join(__dirname, "public")));
 app.use(cors());
 
+app.use("/health", healthRouter);
 app.use("/api", apiRouter);
+
+const now = new Date();
+status.isDBConnected = true;
+status.bootTime = Math.abs(now - status.startTime);
 
 /* For frontend */
 app.use("/", indexRouter);
