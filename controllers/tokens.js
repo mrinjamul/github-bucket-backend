@@ -11,12 +11,13 @@ const GetTokens = async (req, user) => {
   }
 };
 
-const CreateToken = async (req, username, t) => {
+const CreateToken = async (req, username, t, expire) => {
   try {
     // create token in db
     let token = new Token({
       username: username,
       token: t,
+      expireIn: expire,
     });
     return await token.save();
   } catch (err) {

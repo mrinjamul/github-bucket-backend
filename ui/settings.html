@@ -65,6 +65,14 @@
                     </div>
                     <!-- Add more checkboxes for other permissions as needed -->
                 </fieldset>
+                <div class="form-group">
+                    <label for="expireSelect">Expire In:</label>
+                    <select class="form-control" id="expireSelect">
+                        <option value="30d">1 month</option>
+                        <option value="180d">6 months</option>
+                        <option value="100Y">Never expire</option>
+                    </select>
+                </div>
                 <button class="btn btn-success mt-3" onclick="generateAccessToken()">Generate Token</button>
             </div>
         </div>
@@ -169,13 +177,15 @@
                 return;
             }
             const scopesString = scopes.join(',');
+            const expireInSelect = document.getElementById('expireSelect');
+            const expireIn = expireInSelect.value;
             fetch(`${apiURL}/v1/token/generate`, {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ scope: scopesString })
+                body: JSON.stringify({ scope: scopesString, expireIn: expireIn })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -231,9 +241,11 @@
         }
 
 
-        function copyToken() {
-            const generatedTokenElement = document.getElementById('generatedToken');
-            const token = generatedTokenElement.textContent;
+        function copyToken(token) {
+            if (!token) {
+                const generatedTokenElement = document.getElementById('generatedToken');
+                token = generatedTokenElement.textContent;
+            }
             navigator.clipboard.writeText(token)
                 .then(() => {
                     alert('Token copied to clipboard!');

@@ -13,6 +13,9 @@ const TokenSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  expireIn: {
+    type: String,
+  },
 });
 
 TokenSchema.plugin(timestampPlugin);
