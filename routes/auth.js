@@ -7,7 +7,13 @@ var constants = require("../constants");
 // import helpers
 const bcrypt = require("../helpers/bcrypt");
 const { cookieConfig } = require("../helpers/cookie");
-const { getPayload, getSigningOptions, issueToken } = require("../helpers/jwt");
+const {
+  getPayload,
+  getSigningOptions,
+  issueToken,
+  getVerifyingOptions,
+  verifyToken,
+} = require("../helpers/jwt");
 
 // import Controllers
 const {
@@ -202,6 +208,19 @@ router.post("/login", async (req, res, next) => {
   const token = req.cookies.token;
   if (token) {
     //FIXME: regenerate token if expired
+    var verifyOpts = getVerifyingOptions();
+    // decode and verify jwt token
+    const decodedToken = jwt.verifyToken(token, verifyOpts);
+    // decodedToken is null
+    if (!decodedToken) {
+      // clear token cookie
+      res.clearCookie("token");
+      res.status(constants.http.StatusUnauthorized).json({
+        code: constants.http.StatusUnauthorized,
+        error: "invalid token; please login again",
+        message: "Unauthorized",
+      });
+    }
     res.status(constants.http.StatusOK).json({
       message: "user already logged in",
       token: token,

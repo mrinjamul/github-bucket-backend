@@ -51,6 +51,8 @@ const authenticated = (role, permissions) => {
     const decodedToken = jwt.verifyToken(token, verifyOpts);
     // decodedToken is null
     if (!decodedToken) {
+      // clear token cookie
+      res.clearCookie("token");
       res.status(constants.http.StatusUnauthorized).json({
         code: constants.http.StatusUnauthorized,
         error: "invalid token",
