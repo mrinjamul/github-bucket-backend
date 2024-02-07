@@ -210,7 +210,7 @@ router.post("/login", async (req, res, next) => {
     //FIXME: regenerate token if expired
     var verifyOpts = getVerifyingOptions();
     // decode and verify jwt token
-    const decodedToken = jwt.verifyToken(token, verifyOpts);
+    const decodedToken = verifyToken(token, verifyOpts);
     // decodedToken is null
     if (!decodedToken) {
       // clear token cookie
