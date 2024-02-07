@@ -18,6 +18,20 @@ const config = require("./config").getConfig();
 var status = require("./helpers/status").getStatus();
 status.startTime = new Date();
 
+// db client
+const mongoose = require("mongoose");
+// make connection to the database
+mongoose
+  .connect(config.database.url, {
+    dbName: "github_bucket_db",
+  })
+  .then(() => {
+    console.log("database is connected");
+    const now = new Date();
+    status.isDBConnected = true;
+  })
+  .catch((err) => console.log(err));
+
 // get bucket directory
 const { isDirExists, cmdRun } = require("./helpers/utils");
 

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Github Bucket</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/app">Github Bucket</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/app">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">Settings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex align-items-center">
+            <a href="javascript:history.back()" class="mr-3 text-dark"><i class="fas fa-chevron-left"></i></a>
+            <h2>Settings</h2>
+        </div>
+        <h4>User Information</h4>
+        <p><strong>Name:</strong> <span id="userName"></span></p>
+        <p><strong>Role:</strong> <span id="userRole"></span></p>
+        <p><strong>Access Level:</strong> <span id="userAccessLevel"></span></p>
+
+        <h4>Access Tokens</h4>
+        <div class="form-group">
+            <button class="btn btn-primary mb-3" onclick="toggleScopeSelection()">Generate Access Token</button>
+            <div id="scopeSelection" style="display: none;">
+                <fieldset>
+                    <legend>
+                        <h5>File Permission</h5>
+                    </legend>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="fileReadCheckbox" value="file:read">
+                        <label class="form-check-label" for="fileReadCheckbox">Read</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="fileWriteCheckbox" value="file:write">
+                        <label class="form-check-label" for="fileWriteCheckbox">Write</label>
+                    </div>
+                    <!-- Add more checkboxes for other permissions as needed -->
+                </fieldset>
+                <button class="btn btn-success mt-3" onclick="generateAccessToken()">Generate Token</button>
+            </div>
+        </div>
+        <div id="generatedTokenSection" style="display: none;">
+            <p id="generatedToken"></p>
+            <button class="btn btn-primary" onclick="copyToken()"><i class="fas fa-clipboard"></i></button>
+        </div>
+        <ul class="list-group m-3" id="accessTokenList"></ul>
+        <button class="btn btn-danger m-3" onclick="pruneTokens()">Prune Tokens</button>
+    </div>
+
+    <script>
+        const apiURL = '/api'; // Set apiURL to /api
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if token cookie exists
+            const token = getCookie('token');
+            if (!token) {
+                window.location.href = '/login'; // Redirect to login page if not logged in
+            } else {
+                fetchUserInfo(); // Fetch user info when page loads
+                fetchAccessTokenList(); // Fetch access token list when page loads
+            }
+        });
+
+        function fetchUserInfo() {
+            fetch(`${apiURL}/v1/user/profile`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        const userData = data.data;
+                        document.getElementById('userName').textContent = userData.username;
+                        document.getElementById('userRole').textContent = userData.role;
+                        document.getElementById('userAccessLevel').textContent = userData.accessLevel;
+                    } else {
+                        console.error('Error fetching user info:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error fetching user info:', error));
+        }
+
+
+        function fetchAccessTokenList() {
+            fetch(`${apiURL}/v1/token/list`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(resp => {
+                    const accessTokenListElement = document.getElementById('accessTokenList');
+                    accessTokenListElement.innerHTML = '';
+                    resp.data.forEach(tokenData => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('list-group-item');
+                        listItem.style.wordBreak = 'break-all'; // Wrap text if it overflows
+                        listItem.innerHTML = `Username: ${tokenData.username}, <br/> Token: ${tokenData.token}`;
+
+                        // Create delete button and icon
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'btn btn-danger btn-sm float-right ml-2';
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteButton.onclick = function () {
+                            deleteAccessToken(tokenData._id); // Call deleteAccessToken function with token id
+                        };
+
+                        // Create Copy to clipboard
+                        const clipButton = document.createElement('button');
+                        clipButton.className = 'btn btn-default btn-sm float-right ml-2';
+                        clipButton.innerHTML = '<i class="fas fa-clipboard"></i>';
+                        clipButton.onclick = function () {
+                            copyToken(tokenData.token);
+
+                        };
+
+                        // Append delete button to list item
+                        listItem.appendChild(deleteButton);
+                        // Append copy button to list item
+                        listItem.appendChild(clipButton);
+
+                        accessTokenListElement.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching access token list:', error));
+        }
+
+        function toggleScopeSelection() {
+            const scopeSelection = document.getElementById('scopeSelection');
+            scopeSelection.style.display = scopeSelection.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function generateAccessToken() {
+            const scopes = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                const scope = checkbox.value;
+                scopes.push(scope);
+            });
+            if (scopes.length === 0) {
+                alert('Please select at least one permission.');
+                return;
+            }
+            const scopesString = scopes.join(',');
+            fetch(`${apiURL}/v1/token/generate`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ scope: scopesString })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        const generatedTokenSection = document.getElementById('generatedTokenSection');
+                        const generatedTokenElement = document.getElementById('generatedToken');
+                        generatedTokenElement.textContent = data.data.token;
+                        generatedTokenSection.style.display = 'block'; // Show the section
+                        generatedTokenSection.style.wordBreak = 'break-all';
+
+                        fetchAccessTokenList(); // Refresh access token list after generating a new token
+                        toggleScopeSelection(); // Close scope selection section
+                    } else {
+                        console.error('Error generating access token:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error generating access token:', error));
+        }
+
+        function deleteAccessToken(tokenId) {
+            fetch(`${apiURL}/v1/token/${tokenId}`, {
+                method: 'DELETE',
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status) {
+                        fetchAccessTokenList(); // Refresh access token list after deletion
+                    } else {
+                        console.error('Error deleting access token:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error deleting access token:', error));
+        }
+
+
+        function pruneTokens() {
+            if (confirm('Are you sure you want to prune all tokens? This action cannot be undone.')) {
+                fetch(`${apiURL}/v1/token/prune`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status) {
+                            fetchAccessTokenList(); // Refresh access token list after pruning
+                        } else {
+                            console.error('Error pruning tokens:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error pruning tokens:', error));
+            }
+        }
+
+
+        function copyToken() {
+            const generatedTokenElement = document.getElementById('generatedToken');
+            const token = generatedTokenElement.textContent;
+            navigator.clipboard.writeText(token)
+                .then(() => {
+                    alert('Token copied to clipboard!');
+                })
+                .catch(error => console.error('Error copying token:', error));
+        }
+
+
+        function logout() {
+            fetch(`${apiURL}/auth/logout`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(() => {
+                    window.location.href = '/'; // Redirect to homepage after logout
+                })
+                .catch(error => console.error('Error logging out:', error));
+        }
+
+        // Function to get cookie by name
+        function getCookie(name) {
+            const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return cookieValue ? cookieValue.pop() : '';
+        }
+    </script>
+
+</body>
+
+</html>
