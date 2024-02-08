@@ -49,7 +49,6 @@ router.post("/generate", authenticated("admin"), async (req, res) => {
     user.username
   );
   const tokenDB = await CreateToken(req, user.username, token, expireIn);
-  console.log(tokenDB);
   res.status(constants.http.StatusOK).json({
     status: true,
     data: tokenDB,

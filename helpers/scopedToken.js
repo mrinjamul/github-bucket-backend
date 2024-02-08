@@ -30,7 +30,6 @@ class ScopedTokenGenerator {
     if (!decodedToken) {
       return false; // Token is invalid
     }
-    console.log(decodedToken);
     // Check if all required permissions are present in the token scopes
     return requiredPermissions.every((permission) =>
       decodedToken.scopes.includes(permission)

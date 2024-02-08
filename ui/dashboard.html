@@ -96,6 +96,11 @@
                         downloadButton.classList.add('btn', 'btn-sm', 'btn-info', 'float-right');
                         downloadButton.addEventListener('click', () => downloadFile(file.filename));
                         listItem.appendChild(downloadButton);
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.classList.add('btn', 'btn-sm', 'btn-danger', 'mr-2', 'float-right');
+                        deleteButton.addEventListener('click', () => deleteFile(file.filename));
+                        listItem.appendChild(deleteButton);
                         fileListElement.appendChild(listItem);
                     });
                 })
@@ -127,6 +132,20 @@
 
         function downloadFile(filename) {
             window.location.href = `${apiURL}/v1/file/${filename}`;
+        }
+
+        function deleteFile(filename) {
+            if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                fetch(`${apiURL}/v1/file/${filename}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('File deleted successfully:', data);
+                        fetchFileList();
+                    })
+                    .catch(error => console.error('Error deleting file:', error));
+            }
         }
 
         function updateFileName(input) {

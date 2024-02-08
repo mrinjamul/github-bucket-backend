@@ -1,5 +1,6 @@
 const util = require("util");
 const fs = require("fs");
+const path = require("path");
 
 function cmdRun(command) {
   const { exec } = require("child_process");
@@ -49,6 +50,21 @@ async function commitAndPush(message) {
   }
   await cmdRunAsync(`cd bucket && git add -A && git commit -m '${message}'`);
   await cmdRunAsync("cd bucket && git push origin main");
+}
+
+async function deleteFile(filename) {
+  if (!filename) {
+    return;
+  }
+  const filePath = path.join(__dirname, "..", "bucket", "assets", filename); // Adjust the path as needed
+  console.log(filePath);
+  try {
+    await fs.promises.unlink(filePath);
+    console.log("File deleted successfully");
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    throw error; // Propagate the error for handling in the calling function
+  }
 }
 
 // is it a string?
@@ -208,6 +224,7 @@ module.exports = {
   cmdRun,
   cmdRunAsync,
   isDirExists,
+  deleteFile,
   setCommitter,
   commitAndPush,
   ls,

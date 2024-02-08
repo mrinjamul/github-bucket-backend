@@ -13,6 +13,7 @@ const multer = require("multer");
 const upload = require("../../helpers/multer");
 const {
   isDirExists,
+  deleteFile,
   setCommitter,
   commitAndPush,
   ls,
@@ -88,6 +89,40 @@ router.post(
         data: responseData,
       });
     });
+  }
+);
+
+router.delete(
+  "/:file",
+  authenticated("admin", ["file:write"]),
+  async (req, res) => {
+    var file = req.params.file;
+    console.log(file);
+    deleteFile(file)
+      .then(async () => {
+        // Everything went fine.
+        if (isDirExists("bucket")) {
+          try {
+            // set committer info
+            await setCommitter();
+            // commit changes
+            await commitAndPush(`${file}: deleted`);
+          } catch (err) {
+            console.log(err);
+          }
+        }
+        res.status(constants.http.StatusOK).json({
+          status: true,
+          data: `${file} deleted successfully`,
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        res.status(constants.http.StatusInternalServerError).json({
+          status: true,
+          error: error,
+        });
+      });
   }
 );
 
