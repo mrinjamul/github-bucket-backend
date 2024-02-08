@@ -50,13 +50,23 @@
 
     <div class="container mt-5">
         <h2>Github Bucket</h2>
-        <button class="btn btn-primary mb-3" onclick="fetchFileList()"><i class="fas fa-sync-alt"></i></button>
-        <ul class="list-group" id="fileList"></ul>
-        <div class="custom-file mt-3">
-            <input type="file" class="custom-file-input" id="fileInput" onchange="updateFileName(this)" multiple>
-            <label class="custom-file-label" for="fileInput" id="fileInputLabel">Choose files</label>
+        <div class="d-flex m-2 align-items-center"> <!-- Add align-items-center class -->
+            <div class="col-md-3"> <!-- Adjust the width of each column based on your layout -->
+                <button class="btn btn-primary" onclick="fetchFileList()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="col-md-4"> <!-- Adjust the width of each column based on your layout -->
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="fileInput" onchange="updateFileName(this)"
+                        multiple>
+                    <label class="custom-file-label" for="fileInput" id="fileInputLabel">Choose files</label>
+                </div>
+            </div>
+            <div class="col-md-4"> <!-- Adjust the width of each column based on your layout -->
+                <button class="btn btn-success" onclick="uploadFiles()">Upload</button>
+            </div>
         </div>
-        <button class="btn btn-success mt-3" onclick="uploadFiles()">Upload Files</button>
+
+        <ul class="list-group" id="fileList"></ul>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
