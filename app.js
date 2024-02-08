@@ -42,6 +42,16 @@ if (!isDirExists("bucket")) {
   if (!isDirExists("bucket/assets")) {
     cmdRun(`mkdir -p bucket/assets`);
   }
+} else {
+  cmdRun("cd bucket && git pull origin main");
+  console.log("Storage data updated!");
+  setInterval(() => {
+    cmdRun("cd bucket && git pull origin main");
+    console.log("Storage data updated!");
+  }, 2 * 60 * 1000);
+  if (!isDirExists("bucket/assets")) {
+    cmdRun(`mkdir -p bucket/assets`);
+  }
 }
 
 app.use(logger("dev"));

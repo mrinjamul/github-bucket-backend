@@ -16,6 +16,7 @@ const {
   deleteFile,
   setCommitter,
   commitAndPush,
+  GitPull,
   ls,
 } = require("../../helpers/utils");
 
@@ -23,6 +24,8 @@ const authenticated = require("../../middlewares/authenticated");
 
 // get file information from the server
 router.get("/info", authenticated("admin", ["file:read"]), async (req, res) => {
+  // pull data from repo
+  await GitPull();
   let data = [];
   let result = await ls("bucket/assets");
   result.forEach((file) => {

@@ -52,6 +52,10 @@ async function commitAndPush(message) {
   await cmdRunAsync("cd bucket && git push origin main");
 }
 
+async function GitPull() {
+  await cmdRunAsync("cd bucket && git pull origin main");
+}
+
 async function deleteFile(filename) {
   if (!filename) {
     return;
@@ -227,6 +231,7 @@ module.exports = {
   deleteFile,
   setCommitter,
   commitAndPush,
+  GitPull,
   ls,
   isString,
   isDate,
