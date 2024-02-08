@@ -40,6 +40,8 @@
     </div>
 
     <script>
+        const apiURL = '/api';
+
         document.addEventListener('DOMContentLoaded', function () {
             const token = getCookie('token');
             if (token) {
@@ -52,7 +54,7 @@
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 const requestBody = JSON.stringify({ username, password });
-                fetch('/api/auth/login', {
+                fetch(`${apiURL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

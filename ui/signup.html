@@ -49,6 +49,8 @@
     </div>
 
     <script>
+        const apiURL = '/api';
+
         document.addEventListener('DOMContentLoaded', function () {
             const token = getCookie('token');
             if (token) {
@@ -69,7 +71,7 @@
                 }
 
                 const requestBody = JSON.stringify({ username, email, password });
-                fetch('/api/auth/signup', {
+                fetch(`${apiURL}/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
